@@ -10,8 +10,8 @@
 from setuptools import setup
 
 setup(
-    name='habroproxy',
-    version='0.1.0',
+    name='habroproxy2',
+    version='0.2.0',
     description='An SSL-capable (funny) proxy, test task for applicants to one software company',
     long_description='',
     author='Yury Danilin',
@@ -20,7 +20,6 @@ setup(
     install_requires=[
         'html5lib==1.0.1',
         'requests==2.19.1',
-        'pyOpenSSL==18.0.0',
         'beautifulsoup4==4.6.3',
     ],
     extras_require={

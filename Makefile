@@ -1,7 +1,7 @@
 install:
 	pip install -r requirements.txt
 lint:
-	pylint ./habroproxy
+	pylint ./src
 test:
 	pytest
 run:
