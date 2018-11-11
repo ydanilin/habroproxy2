@@ -3,6 +3,15 @@
     (see TMInterceptor in interceptors.py and project readme for details)
 """
 from itertools import zip_longest, chain
+from time import localtime, strftime
+
+
+def get_time():
+    """
+        Returns string representation of computer's time
+        Used for server logging, shows info without date
+    """
+    return strftime("%H:%M:%S", localtime())
 
 
 def str_has_digits(stream):

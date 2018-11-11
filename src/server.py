@@ -1,8 +1,10 @@
 """ server's backbone """
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from socketserver import ThreadingMixIn
 from urllib.parse import urlunparse
 import requests
 from .interceptors import intercept
+from .utils import get_time
 
 
 SCHEME = 'https'
@@ -13,6 +15,7 @@ class Handler(BaseHTTPRequestHandler):
     # pylint: disable=invalid-name
     def do_GET(self):
         """ handler for GET requests """
+        print(f'Got request for {self.requestline} at {get_time()}')
         # six items in iterable for urlunparse(): scheme://netloc/path;parameters?query#fragment
         url = urlunparse([SCHEME, HOST, self.path, '', '', ''])
         host_hd = self.headers.get('Host')
@@ -26,7 +29,6 @@ class Handler(BaseHTTPRequestHandler):
             self.headers.replace_header('Origin', urlunparse([SCHEME, HOST, '', '', '', '']))
 
         resp = requests.get(url, headers=dict(self.headers.items()))
-        # resp = requests.get(url)
         if resp.headers.get('Content-Encoding'):
             resp.headers.pop('Content-Encoding')
         if resp.headers.get('Transfer-Encoding'):
@@ -34,25 +36,33 @@ class Handler(BaseHTTPRequestHandler):
         content_type = resp.headers.get('Content-Type')
         if content_type and 'text/html' in content_type:
             content_for_client = intercept(resp)
+            content_for_client = content_for_client.replace(
+                b'https://habr.com', b'http://127.0.0.1:8080'
+            )
         else:
             content_for_client = resp.content
         self.protocol_version = self.request_version
-        if self.headers.get('Connection') == 'keep-alive':
-            self.close_connection = False
-        else:
-            self.close_connection = True
+        # pylint: disable=attribute-defined-outside-init
+        self.close_connection = False if self.headers.get('Connection') == 'keep-alive' else True
         self.send_response(200)
         list(map(lambda x: self.send_header(x[0], x[1]), dict(resp.headers).items()))
-        self.send_header('Content-Length', len(content_for_client))
+        if not resp.headers.get('Content-Length'):
+            self.send_header('Content-Length', len(content_for_client))
         self.end_headers()
-        amt = self.wfile.write(content_for_client)
-        print('Written bytes: ', amt)
-        if self.close_connection:
-            print('connection closed')
-            self.connection.close()
+        try:
+            amt = self.wfile.write(content_for_client)
+            print(f'Written {amt} bytes for {self.requestline} at {get_time()}\n')
+        except BrokenPipeError:
+            print(f'Connection for {self.requestline} suddenly closed by client')
+
+
+class HabroServer(ThreadingMixIn, HTTPServer):
+    """ Just to inherit from ThreadingMixIn """
+    pass
 
 
 def get_server(port):
     """ serve_forever() should be called outside, by runners """
-    server = HTTPServer(('', port), Handler)
+    # server = HTTPServer(('', port), Handler)
+    server = HabroServer(('', port), Handler)
     return server

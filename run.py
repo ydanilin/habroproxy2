@@ -8,8 +8,8 @@ if __name__ == "__main__":
     PORT = 8080
     print(f'Habroproxy server started at port {PORT}')
     try:
-        server = get_server(PORT)
-        server.serve_forever()
+        with get_server(PORT) as server:
+            server.serve_forever()
     except KeyboardInterrupt:
         server.socket.close()
         sys.exit()
