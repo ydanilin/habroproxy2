@@ -24,6 +24,10 @@ class Handler(BaseHTTPRequestHandler):
     # pylint: disable=invalid-name
     def do_GET(self):
         """ handler for GET requests """
+        self.protocol_version = self.request_version
+        # pylint: disable=attribute-defined-outside-init
+        self.close_connection = False if self.headers.get('Connection') == 'keep-alive' else True
+
         print(f'Got request for {self.requestline} at {get_time()}')
         url, headers = self.server.modify_request_to_remote(self.path, self.headers)
         resp = requests.get(url, headers=headers)
@@ -36,17 +40,16 @@ class Handler(BaseHTTPRequestHandler):
             )
         else:
             content_for_client = resp.content
-        self.protocol_version = self.request_version
-        # pylint: disable=attribute-defined-outside-init
-        self.close_connection = False if self.headers.get('Connection') == 'keep-alive' else True
-        self.send_response(200)
+
+        self.send_response(resp.status_code)
         list(map(lambda x: self.send_header(x[0], x[1]), dict(resp.headers).items()))
         if not resp.headers.get('Content-Length'):
             self.send_header('Content-Length', len(content_for_client))
         self.end_headers()
         try:
             amt = self.wfile.write(content_for_client)
-            print(f'Written {amt} bytes for {self.requestline} at {get_time()}\n')
+            print((f'Response {resp.status_code}, written {amt} bytes'
+                   f'for {self.requestline} at {get_time()}\n'))
         except BrokenPipeError:
             print(f'Connection for {self.requestline} suddenly closed by client')
 

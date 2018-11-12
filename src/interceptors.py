@@ -23,7 +23,7 @@ class TMInterceptor:
     def __init__(self):
         # interceptor configuration
         self.tm_ = b'\xE2\x84\xA2'.decode()
-        self.special = '"()- !.,?[]{}_\n\r\t:;«»'
+        self.special = '"()- !.,?[]{}_\n\r\t:;«»/'
         self.char_count = 6
         self.ignored_tags = ['script', 'code']
 
