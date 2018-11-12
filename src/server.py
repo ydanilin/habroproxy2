@@ -7,8 +7,17 @@ from .interceptors import intercept
 from .utils import get_time
 
 
-SCHEME = 'https'
-HOST = 'habr.com'
+def strip_headers_to_client(headers):
+    """
+        Removes the following headers from Response class (MUTATES):
+        'Content-Encoding': Python Requests library provides content already ungzipped
+        'Transfer-Encoding': Response will not be understood by client if 'chunked' is set
+    """
+    if headers.get('Content-Encoding'):
+        headers.pop('Content-Encoding')
+    if headers.get('Transfer-Encoding'):
+        headers.pop('Transfer-Encoding')
+
 
 class Handler(BaseHTTPRequestHandler):
     """ client requests handler """
@@ -16,23 +25,9 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         """ handler for GET requests """
         print(f'Got request for {self.requestline} at {get_time()}')
-        # six items in iterable for urlunparse(): scheme://netloc/path;parameters?query#fragment
-        url = urlunparse([SCHEME, HOST, self.path, '', '', ''])
-        host_hd = self.headers.get('Host')
-        if host_hd and ('127.0' in host_hd or 'localhost' in host_hd):
-            self.headers.replace_header('Host', HOST)
-        ref_hd = self.headers.get('Referer')
-        if ref_hd and ('127.0' in ref_hd or 'localhost' in ref_hd):
-            self.headers.replace_header('Referer', url)
-        orig_hd = self.headers.get('Origin')
-        if orig_hd and ('127.0' in orig_hd or 'localhost' in orig_hd):
-            self.headers.replace_header('Origin', urlunparse([SCHEME, HOST, '', '', '', '']))
-
-        resp = requests.get(url, headers=dict(self.headers.items()))
-        if resp.headers.get('Content-Encoding'):
-            resp.headers.pop('Content-Encoding')
-        if resp.headers.get('Transfer-Encoding'):
-            resp.headers.pop('Transfer-Encoding')
+        url, headers = self.server.modify_request_to_remote(self.path, self.headers)
+        resp = requests.get(url, headers=headers)
+        strip_headers_to_client(resp.headers)
         content_type = resp.headers.get('Content-Type')
         if content_type and 'text/html' in content_type:
             content_for_client = intercept(resp)
@@ -58,7 +53,29 @@ class Handler(BaseHTTPRequestHandler):
 
 class HabroServer(ThreadingMixIn, HTTPServer):
     """ Just to inherit from ThreadingMixIn """
-    pass
+    def __init__(self, address, request_handler):
+        super(HabroServer, self).__init__(address, request_handler)
+        self.scheme = 'https'
+        self.host = 'habr.com'
+
+    def modify_request_to_remote(self, path, headers):
+        """
+            path = request handler.path
+            headers = request handler.headers
+            Returns url and headers dict suitable for remote
+        """
+        # six items in iterable for urlunparse() are: scheme://netloc/path;parameters?query#fragment
+        url = urlunparse([self.scheme, self.host, path, '', '', ''])
+        host_hd = headers.get('Host')
+        if host_hd and ('127.0' in host_hd or 'localhost' in host_hd):
+            headers.replace_header('Host', self.host)
+        ref_hd = headers.get('Referer')
+        if ref_hd and ('127.0' in ref_hd or 'localhost' in ref_hd):
+            headers.replace_header('Referer', url)
+        orig_hd = headers.get('Origin')
+        if orig_hd and ('127.0' in orig_hd or 'localhost' in orig_hd):
+            headers.replace_header('Origin', urlunparse([self.scheme, self.host, '', '', '', '']))
+        return url, dict(headers.items())
 
 
 def get_server(port):

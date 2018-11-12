@@ -1,5 +1,9 @@
 # HABROPROXY
 
+[![Build Status](https://travis-ci.com/ydanilin/habroproxy2.svg?branch=master)](https://travis-ci.com/ydanilin/habroproxy2)
+[![Maintainability](https://api.codeclimate.com/v1/badges/58160aab1f244142509b/maintainability)](https://codeclimate.com/github/ydanilin/habroproxy2/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/58160aab1f244142509b/test_coverage)](https://codeclimate.com/github/ydanilin/habroproxy2/test_coverage)
+
 ## Описание
 
 Проект выполнялся как тестовое задание в компанию [Ivelum](https://ivelum.com/).
@@ -10,19 +14,20 @@
 
 Ответы от других серверов и/или с контентом, отличным от html, не модифицируются.
 
+Тестировалось на Ubuntu: Firefox, Windows: Chrome, Firefox, IE Windows
+
 ## Установка
 
 ### Prerequisites
 
-* `Python` версии **не выше 3.6.6**. Новейшая 3.7 на данный момент не поддерживает библиотеку OpenSSL.
+* `Python` **3**.
 * Пользователям Windows рекомендуется установить недостающий и очень удобный инструмент `make`, скачав его [отсюда](https://vorboss.dl.sourceforge.net/project/gnuwin32/make/3.81/make-3.81.exe) и прописав в путь.
-* Браузер Firefox (с другими пока не тестировалось)
 
 ### Развертывание
 
 ```bash
-git clone https://github.com/ydanilin/habroproxy.git
-cd habroproxy
+git clone https://github.com/ydanilin/habroproxy2.git
+cd habroproxy2
 make install
 ```
 
@@ -36,3 +41,10 @@ make run
 
 Получаем ответ  
 `Habroproxy server is listening to '': 8080`
+
+## Работа через прокси
+
+В строке браузера набираем `127.0.0.1:8080` и видим модифицированную страницу Хабра.  
+В случае IE надо ставить префикс `http://`, иначе он отправляет в поиск.
+Прокси модифицирует ссылки так, чтобы браузер не уходил с 127.0.0.1 в случае перехода на другие хабро-страницы.
+Ссылки на иные ресурсы не модифицируются.

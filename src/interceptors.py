@@ -52,7 +52,7 @@ INTERCEPTORS = [TMInterceptor()]
 
 def intercept(response):
     """
-        Invokes every interceptor listed in INTERCEPTORS class's process() method
+        Invokes every process() method of interceptor class listed in INTERCEPTORS list.
         Takes remote response and returns [modified] binary content
     """
     if INTERCEPTORS:
