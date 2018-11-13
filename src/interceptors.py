@@ -12,10 +12,10 @@ from bs4 import BeautifulSoup, NavigableString, Comment
 from .utils import multi_insert
 
 
-# pylint: disable=too-few-public-methods
 class TMInterceptor:
     """
-        Takes response body and appends tm_ sign to every word of char_count letters.
+        Takes response body and appends tm_ sign to every word of char_count
+        letters.
         Other settings via __init__():
         - special: word delimiters, see .utils multi_insert() description
         - ignored_tags: where multi_insert() must not look for words
@@ -23,7 +23,6 @@ class TMInterceptor:
     def __init__(self):
         # interceptor configuration
         self.tm_ = b'\xE2\x84\xA2'.decode()
-        self.special = '"()- !.,?[]{}_\n\r\t:;«»/'
         self.char_count = 6
         self.ignored_tags = ['script', 'code']
 
@@ -43,7 +42,7 @@ class TMInterceptor:
             soup_dom.html.body.descendants
         )
         for ns_ in list(nav_strings):
-            ns_.replace_with(multi_insert(ns_, self.tm_, self.char_count, self.special))
+            ns_.replace_with(multi_insert(ns_, self.tm_, self.char_count))
         return soup_dom
 
 
@@ -52,7 +51,8 @@ INTERCEPTORS = [TMInterceptor()]
 
 def intercept(response):
     """
-        Invokes every process() method of interceptor class listed in INTERCEPTORS list.
+        Invokes every process() method of interceptor class listed in
+        INTERCEPTORS list.
         Takes remote response and returns [modified] binary content
     """
     if INTERCEPTORS:

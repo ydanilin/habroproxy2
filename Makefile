@@ -1,7 +1,7 @@
 install:
 	pip install -r requirements.txt
 lint:
-	pylint ./src
+	python -m flake8 ./src
 test:
 	pytest
 run:

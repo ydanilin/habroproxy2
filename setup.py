@@ -12,7 +12,8 @@ from setuptools import setup
 setup(
     name='habroproxy2',
     version='0.2.0',
-    description='An SSL-capable (funny) proxy, test task for applicants to one software company',
+    description=('An SSL-capable (funny) proxy, test task for applicants to'
+                 ' one software company'),
     long_description='',
     author='Yury Danilin',
     author_email='yuvede@gmail.com',
@@ -24,7 +25,7 @@ setup(
     ],
     extras_require={
         'dev': [
-            'pylint==2.1.1',
+            'flake8==3.6.0',
             'pytest==3.7.4',
         ]
     }
