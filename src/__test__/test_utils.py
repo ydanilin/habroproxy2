@@ -17,7 +17,6 @@ def test_multi_insert():
         This test illustrates how TMInterceptor work
     """
     trademark = b'\xE2\x84\xA2'.decode()
-    special = '"()- !.,?[]{}_\n\r\t:;'
 
     # started from separator and \r\n
     t_in1 = ('__ _ _\r\nОднако, в последнюю? "модель" (автомобиля)  ,   .  установили необычный-необычный device-аппарат.'  # noqa: E501
